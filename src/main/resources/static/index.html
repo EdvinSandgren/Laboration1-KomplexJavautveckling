@@ -12,27 +12,86 @@
             --bg: #f8fafc;
         }
 
-        body { font-family: system-ui, sans-serif; background: var(--bg); padding: 2rem; }
-        .container { max-width: 800px; margin: 0 auto; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: var(--bg);
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
 
         /* Form Styling */
-        .card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 2rem; }
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
-        input, textarea { width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; }
+        .card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
 
-        .btn { padding: 0.6rem 1.2rem; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; color: white; }
-        .btn-primary { background: var(--primary); }
-        .btn-danger { background: var(--danger); }
-        .btn-cancel { background: #64748b; margin-left: 0.5rem; }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            color: white;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+        }
+
+        .btn-cancel {
+            background: #64748b;
+            margin-left: 0.5rem;
+        }
 
         /* List Styling */
         .listing-item {
-            display: flex; justify-content: space-between; align-items: center;
-            background: white; padding: 1rem; border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
         }
-        .listing-info h3 { margin: 0; font-size: 1.1rem; }
-        .listing-info p { margin: 0.2rem 0; color: #64748b; font-size: 0.9rem; }
+
+        .listing-info h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .listing-info p {
+            margin: 0.2rem 0;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
@@ -78,7 +137,8 @@
     </div>
 
     <div id="listings-container" class="card">
-        <h3>Current Listings</h3>
+        <h3>Current Inventory</h3>
+        <p>Click on cars for more details</p>
         <div id="listings-list">
             <p>Loading listings...</p>
         </div>
@@ -115,26 +175,31 @@
             return;
         }
         listContainer.innerHTML = listings.map(item => `
-            <div class="listing-item">
+            <div class="listing-item"
+                 data-id="${item.id}"
+                 data-model="${item.model}"
+                 data-price="${item.price}"
+                 data-description="${item.description.replace(/"/g, '&quot;')}"
+                 data-mileage="${item.mileage}"
+                 data-modelyear="${item.modelyear}"
+                 data-status="${item.status}">
+
                 <div class="listing-info">
                     <details>
                         <summary style="display: block; align-items: center; cursor: pointer; margin-bottom: 10px;">
-                        <h3 id="item-status">${item.model} - ${item.status}</h3>
-                        <p>${item.price} SEK — ${item.mileage} km</p>
+                            <h3 id="item-status">${item.model} - ${item.status.replaceAll(/_/g, ' ')}</h3>
+                            <p>${item.price} SEK — ${item.mileage} km</p>
                         </summary>
                         <p style="white-space: pre-wrap">${item.description}</p>
                     </details>
-
                 </div>
+
                 <div>
-                    <button class="btn btn-primary" onclick="editMode('${item.id}', '${item.model}', '${item.price}', '${item.description}', '${item.mileage}', '${item.modelyear}', '${item.status}')">Edit</button>
+                    <button class="btn btn-primary" onclick="handleEditClick(this)">Edit</button>
                     <button class="btn btn-danger" onclick="deleteListing('${item.id}')">Delete</button>
                 </div>
-
             </div>
         `).join('');
-        const paragraph = document.getElementById('item-status');
-        paragraph.textContent = paragraph.textContent.replaceAll(/_/g, ' ');
     }
 
     // 3. Handle Form Submit (Create or Update)
@@ -157,7 +222,7 @@
         try {
             const response = await fetch(url, {
                 method: method,
-                headers: { 'Content-Type': 'application/json' },
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(payload)
             });
 
@@ -175,7 +240,7 @@
         if (!confirm('Are you sure?')) return;
 
         try {
-            await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+            await fetch(`${API_URL}/${id}`, {method: 'DELETE'});
             fetchListings();
         } catch (err) {
             console.error('Delete failed', err);
@@ -212,6 +277,15 @@
     }
 
     cancelBtn.addEventListener('click', resetForm);
+
+    // New helper function to bridge the gap
+    function handleEditClick(button) {
+        const container = button.closest('.listing-item');
+        const d = container.dataset; // Accesses all data-* attributes
+
+        // Call your original function with the clean data
+        editMode(d.id, d.model, d.price, d.description, d.mileage, d.modelyear, d.status);
+    }
 
     // Initial load
     fetchListings();
