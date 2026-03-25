@@ -4,95 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Car Dealer</title>
-    <style>
-        :root {
-            --primary: #2563eb;
-            --danger: #dc2626;
-            --success: #16a34a;
-            --bg: #f8fafc;
-        }
-
-        body {
-            font-family: system-ui, sans-serif;
-            background: var(--bg);
-            padding: 2rem;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        /* Form Styling */
-        .card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-        }
-
-        input, textarea {
-            width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-
-        .btn {
-            padding: 0.6rem 1.2rem;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 500;
-            color: white;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-        }
-
-        .btn-danger {
-            background: var(--danger);
-        }
-
-        .btn-cancel {
-            background: #64748b;
-            margin-left: 0.5rem;
-        }
-
-        /* List Styling */
-        .listing-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: white;
-            padding: 1rem;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .listing-info h3 {
-            margin: 0;
-            font-size: 1.1rem;
-        }
-
-        .listing-info p {
-            margin: 0.2rem 0;
-            color: #64748b;
-            font-size: 0.9rem;
-        }
-    </style>
+    <link rel="stylesheet" href="/pagestyle.css">
 </head>
 <body>
 
@@ -146,7 +58,7 @@
 </div>
 
 <script>
-    const API_URL = 'api/v1/cars'; // Replace with your backend URL
+    const API_URL = 'api/v1/cars';
     const form = document.getElementById('listing-form');
     const listContainer = document.getElementById('listings-list');
     const submitBtn = document.getElementById('submit-btn');
@@ -278,12 +190,10 @@
 
     cancelBtn.addEventListener('click', resetForm);
 
-    // New helper function to bridge the gap
     function handleEditClick(button) {
         const container = button.closest('.listing-item');
-        const d = container.dataset; // Accesses all data-* attributes
+        const d = container.dataset;
 
-        // Call your original function with the clean data
         editMode(d.id, d.model, d.price, d.description, d.mileage, d.modelyear, d.status);
     }
 
