@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Dealer - Editor</title>
+    <link rel="stylesheet" href="/pagestyle.css">
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <h3 id="form-title">Add New Car</h3>
+        <form id="listing-form">
+            <input type="hidden" id="listing-id">
+            <div class="form-group">
+                <label>Make and Model</label>
+                <input type="text" id="model" required placeholder="e.g. Volkswagen Golf">
+            </div>
+            <div class="form-group">
+                <label>Price (SEK)</label>
+                <input type="number" id="price" required>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="description" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Mileage (km)</label>
+                <input type="number" id="mileage" required>
+            </div>
+            <div class="form-group">
+                <label>Model Year</label>
+                <input type="number" id="modelyear" required>
+            </div>
+            <div class="form-group" id="listing-status-container">
+                <label for="status">Status:</label>
+                <select id="status" required>
+                    <option value="FOR_SALE">For Sale</option>
+                    <option value="SOLD">Sold</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary" id="submit-btn">Save Listing</button>
+            <a href="index.html" class="btn btn-cancel">Back to Inventory</a>
+        </form>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'api/v1/cars';
+    const form = document.getElementById('listing-form');
+    const formTitle = document.getElementById('form-title');
+    const submitBtn = document.getElementById('submit-btn');
+    const statusContainer = document.getElementById('listing-status-container');
+
+    // Check if we are editing by looking at URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const editId = urlParams.get('id');
+
+    async function init() {
+        if (editId) {
+            formTitle.innerText = "Edit Listing";
+            submitBtn.innerText = "Update Listing";
+            statusContainer.hidden = false;
+            await loadListingData(editId);
+        } else {
+            statusContainer.hidden = true; // Hide status for new entries
+        }
+    }
+
+    async function loadListingData(id) {
+        try {
+            const response = await fetch(`${API_URL}/${id}`);
+            const item = await response.json();
+
+            document.getElementById('listing-id').value = item.id;
+            document.getElementById('model').value = item.model;
+            document.getElementById('price').value = item.price;
+            document.getElementById('description').value = item.description;
+            document.getElementById('mileage').value = item.mileage;
+            document.getElementById('modelyear').value = item.modelyear;
+            document.getElementById('status').value = item.status;
+        } catch (err) {
+            alert("Error loading car data");
+        }
+    }
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const id = document.getElementById('listing-id').value;
+        const payload = {
+            model: document.getElementById('model').value,
+            description: document.getElementById('description').value,
+            price: document.getElementById('price').value,
+            mileage: document.getElementById('mileage').value,
+            modelyear: document.getElementById('modelyear').value,
+            status: document.getElementById('status').value
+        };
+
+        const method = editId ? 'PUT' : 'POST';
+        const url = editId ? `${API_URL}/${id}` : API_URL;
+
+        try {
+            const response = await fetch(url, {
+                method: method,
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                window.location.href = 'index.html'; // Redirect back to list after success
+            }
+        } catch (err) {
+            alert('Failed to save data');
+        }
+    });
+
+    init();
+</script>
+</body>
+</html>

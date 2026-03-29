@@ -7,15 +7,16 @@ import org.example.laboration1.domain.dto.CarDto;
 import org.example.laboration1.domain.dto.CreateCarDto;
 import org.example.laboration1.domain.dto.UpdateCarDto;
 import org.example.laboration1.domain.entity.Car;
+import org.example.laboration1.exception.CarNotFoundException;
 import org.example.laboration1.mapper.CarMapper;
 import org.example.laboration1.service.CarService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
-import java.util.UUID;
 
-@RestController
+@Controller
 @RequestMapping(path = "/api/v1/cars")
 public class CarController {
 
@@ -43,6 +44,15 @@ public class CarController {
         List<Car> cars = carService.listCars();
         List<CarDto> carDtos = cars.stream().map(carMapper::toDto).toList();
         return ResponseEntity.ok(carDtos);
+    }
+
+    @GetMapping("/{carId}")
+    public ResponseEntity<CarDto> editCar(
+            @PathVariable Long carId
+    ){
+        Car car = carService.listCarById(carId).orElseThrow();
+        CarDto carDto = carMapper.toDto(car);
+        return ResponseEntity.ok(carDto);
     }
 
     @PutMapping(path = "/{carId}")

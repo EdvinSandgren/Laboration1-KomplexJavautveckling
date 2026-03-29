@@ -10,6 +10,7 @@ import org.example.laboration1.service.CarService;
 import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -64,5 +65,10 @@ public class CarServiceImpl implements CarService {
     @Override
     public void deleteCar(Long carId) {
         carRepository.deleteById(carId);
+    }
+
+    @Override
+    public Optional<Car> listCarById(Long carId) {
+        return carRepository.findById(carId);
     }
 }

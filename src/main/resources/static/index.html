@@ -3,49 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Car Dealer</title>
+    <title>Car Dealer - Inventory</title>
     <link rel="stylesheet" href="/pagestyle.css">
 </head>
 <body>
 
 <div class="container">
-    <h2>Inventory Manager</h2>
-
-    <div class="card">
-        <h3 id="form-title">Add New Car</h3>
-        <form id="listing-form">
-            <input type="hidden" id="listing-id">
-            <div class="form-group">
-                <label>Make and Model</label>
-                <input type="text" id="model" required placeholder="e.g. Volkswagen Beetle">
-            </div>
-            <div class="form-group">
-                <label>Price (SEK)</label>
-                <input type="number" id="price" required>
-            </div>
-            <div class="form-group">
-                <label>Description</label>
-                <textarea id="description" rows="3"></textarea>
-            </div>
-            <div class="form-group">
-                <label>Mileage (km)</label>
-                <input type="number" id="mileage" required>
-            </div>
-            <div class="form-group">
-                <label>Model Year</label>
-                <input type="number" id="modelyear" required>
-            </div>
-            <div class="form-group" id="listing-status">
-                <label for="status">Status:</label>
-
-                <select name="status" id="status" required>
-                    <option value="FOR_SALE">For Sale</option>
-                    <option value="SOLD">Sold</option>
-                </select>
-            </div>
-            <button type="submit" class="btn btn-primary" id="submit-btn">Save Listing</button>
-            <button type="button" class="btn btn-cancel" id="cancel-btn" style="display:none;">Cancel</button>
-        </form>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2>Inventory Manager</h2>
+        <a href="editor.html" class="btn btn-primary">Add New Car +</a>
     </div>
 
     <div id="listings-container" class="card">
@@ -59,148 +25,53 @@
 
 <script>
     const API_URL = 'api/v1/cars';
-    const form = document.getElementById('listing-form');
     const listContainer = document.getElementById('listings-list');
-    const submitBtn = document.getElementById('submit-btn');
-    const cancelBtn = document.getElementById('cancel-btn');
-    const formTitle = document.getElementById('form-title');
-    document.getElementById('listing-status').hidden = true;
-    let isEditing = false;
-    // --- Core Functions ---
 
-    // 1. Fetch all listings
     async function fetchListings() {
         try {
             const response = await fetch(API_URL);
             const data = await response.json();
             renderListings(data);
         } catch (err) {
-            listContainer.innerHTML = '<p style="color:red">Error loading listings. Check console.</p>';
-            console.error(err);
+            listContainer.innerHTML = '<p style="color:red">Error loading listings.</p>';
         }
     }
 
-    // 2. Render HTML for listings
     function renderListings(listings) {
         if (listings.length === 0) {
             listContainer.innerHTML = '<p>No listings found.</p>';
             return;
         }
         listContainer.innerHTML = listings.map(item => `
-            <div class="listing-item"
-                 data-id="${item.id}"
-                 data-model="${item.model}"
-                 data-price="${item.price}"
-                 data-description="${item.description.replace(/"/g, '&quot;')}"
-                 data-mileage="${item.mileage}"
-                 data-modelyear="${item.modelyear}"
-                 data-status="${item.status}">
-
+            <div class="listing-item">
                 <div class="listing-info">
                     <details>
-                        <summary style="display: block; align-items: center; cursor: pointer; margin-bottom: 10px;">
-                            <h3 id="item-status">${item.model} - ${item.status.replaceAll(/_/g, ' ')}</h3>
+                        <summary style="display: block; cursor: pointer; margin-bottom: 10px;">
+                            <h3>${item.model} - ${item.status.replaceAll(/_/g, ' ')}</h3>
                             <p>${item.price} SEK — ${item.mileage} km</p>
                         </summary>
                         <p style="white-space: pre-wrap">${item.description}</p>
                     </details>
                 </div>
-
                 <div>
-                    <button class="btn btn-primary" onclick="handleEditClick(this)">Edit</button>
+                    <a href="editor.html?id=${item.id}" class="btn btn-primary">Edit</a>
                     <button class="btn btn-danger" onclick="deleteListing('${item.id}')">Delete</button>
                 </div>
             </div>
         `).join('');
     }
 
-    // 3. Handle Form Submit (Create or Update)
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const id = document.getElementById('listing-id').value;
-        const payload = {
-            model: document.getElementById('model').value,
-            description: document.getElementById('description').value,
-            price: document.getElementById('price').value,
-            mileage: document.getElementById('mileage').value,
-            modelyear: document.getElementById('modelyear').value,
-            status: document.getElementById('status').value
-        };
-
-        const method = isEditing ? 'PUT' : 'POST';
-        const url = isEditing ? `${API_URL}/${id}` : API_URL;
-
-        try {
-            const response = await fetch(url, {
-                method: method,
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(payload)
-            });
-
-            if (response.ok) {
-                resetForm();
-                fetchListings();
-            }
-        } catch (err) {
-            alert('Failed to save data');
-        }
-    });
-
-    // 4. Delete Listing
     async function deleteListing(id) {
         if (!confirm('Are you sure?')) return;
-
         try {
-            await fetch(`${API_URL}/${id}`, {method: 'DELETE'});
+            await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
             fetchListings();
         } catch (err) {
             console.error('Delete failed', err);
         }
     }
 
-    // --- UI Helpers ---
-
-    function editMode(id, model, price, desc, mileage, modelyear, status) {
-        isEditing = true;
-        document.getElementById('listing-status').hidden = false;
-
-        formTitle.innerText = "Edit Listing";
-        submitBtn.innerText = "Update Listing";
-        cancelBtn.style.display = "inline-block";
-
-        document.getElementById('listing-id').value = id;
-        document.getElementById('model').value = model;
-        document.getElementById('price').value = price;
-        document.getElementById('description').value = desc;
-        document.getElementById('mileage').value = mileage;
-        document.getElementById('modelyear').value = modelyear;
-        document.getElementById('status').value = status;
-    }
-
-    function resetForm() {
-        isEditing = false;
-        document.getElementById('listing-status').hidden = true;
-        formTitle.innerText = "Add New Listing";
-        submitBtn.innerText = "Save Listing";
-        cancelBtn.style.display = "none";
-        form.reset();
-        document.getElementById('listing-id').value = '';
-    }
-
-    cancelBtn.addEventListener('click', resetForm);
-
-    function handleEditClick(button) {
-        const container = button.closest('.listing-item');
-        const d = container.dataset;
-
-        editMode(d.id, d.model, d.price, d.description, d.mileage, d.modelyear, d.status);
-    }
-
-    // Initial load
     fetchListings();
-
 </script>
-
 </body>
 </html>

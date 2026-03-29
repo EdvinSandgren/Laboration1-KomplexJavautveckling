@@ -4,6 +4,7 @@ import org.example.laboration1.domain.CreateCarRequest;
 import org.example.laboration1.domain.UpdateCarRequest;
 import org.example.laboration1.domain.entity.Car;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface CarService {
@@ -15,4 +16,6 @@ public interface CarService {
     Car updateCar(Long carId, UpdateCarRequest request);
 
     void deleteCar(Long carId);
+
+    Optional<Car> listCarById(Long carId);
 }
